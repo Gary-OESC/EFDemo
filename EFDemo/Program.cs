@@ -18,17 +18,15 @@ namespace EFDemo
 
             using var context = new PagilaContext(options);
 
-            GetActors(context);
-
-            int actorId = InsertActor(context);
+            int actorId = InsertActor(context, "Kimberly", "Collins");
+            int filmId = InsertFilm(context, "Kimberly's Film");
+            int sequelId = InsertFilm(context, "Kimberly's Film - The Sequel");
+            InsertFilmActor(context, actorId, filmId);
+            InsertFilmActor(context, actorId, sequelId);
+            InsertFilmActor(context, actorId, sequelId);
 
             GetActors(context, "Collins");
-
-            UpdateActor(context, actorId);
-
-            GetActors(context, "NewLastName");
-
-            DeleteActor(context, actorId);
+            GetFilms(context, 2026);
         }
 
         static void GetActors(PagilaContext context)
@@ -36,13 +34,14 @@ namespace EFDemo
             Console.WriteLine("First 5 Actors:");
 
             var actors = context.Actors
+                .Include(a => a.Films)
                 .OrderBy(a => a.ActorId)
                 .Take(5)
                 .ToList();
 
             foreach (var actor in actors)
             {
-                Console.WriteLine($"{actor.ActorId}: {actor.FirstName} {actor.LastName}");
+                Console.WriteLine($"{actor.ActorId}: {actor.FirstName} {actor.LastName} ({actor.Films.Count} films)");
             }
 
             Console.WriteLine();
@@ -53,25 +52,25 @@ namespace EFDemo
             Console.WriteLine($"Actors with last name of {lastName}:");
 
             var actors = context.Actors
+                .Include(a => a.Films)
                 .Where(a => a.LastName == lastName)
                 .OrderBy(a => a.ActorId)
                 .ToList();
 
             foreach (var actor in actors)
             {
-                Console.WriteLine($"{actor.ActorId}: {actor.FirstName} {actor.LastName}");
+                Console.WriteLine($"{actor.ActorId}: {actor.FirstName} {actor.LastName} ({actor.Films.Count} films)");
             }
 
             Console.WriteLine();
         }
 
-        static int InsertActor(PagilaContext context)
+        static int InsertActor(PagilaContext context, string firstName, string lastName)
         {
             var actor = new Actor
             {
-                FirstName = "Kimberly",
-                LastName = "Collins",
-                LastUpdate = DateTime.UtcNow
+                FirstName = firstName,
+                LastName = lastName
             };
 
             context.Actors.Add(actor);
