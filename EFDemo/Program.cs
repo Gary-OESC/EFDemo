@@ -83,6 +83,63 @@ namespace EFDemo
             return actor.ActorId;
         }
 
+        static void GetFilms(PagilaContext context, int releaseYear)
+        {
+            Console.WriteLine($"Films released in {releaseYear}:");
+
+            var films = context.Films
+                .Include(a => a.Actors)
+                .Where(a => a.ReleaseYear == releaseYear)
+                .OrderBy(a => a.FilmId)
+                .ToList();
+
+            foreach (var film in films)
+            {
+                Console.WriteLine($"{film.FilmId}: {film.Title} ({film.Actors.Count} actors)");
+            }
+
+            Console.WriteLine();
+        }
+
+        static int InsertFilm(PagilaContext context, string title)
+        {
+            var film = new Film
+            {
+                Title = title,
+                Description = null,
+                ReleaseYear = 2026
+            };
+
+            context.Films.Add(film);
+            context.SaveChanges();
+
+            return film.FilmId;
+        }
+
+        private static void InsertFilmActor(PagilaContext context, int actorId, int filmId)
+        {
+            var actor = context.Actors
+                .FirstOrDefault(a => a.ActorId == actorId);
+
+            var film = context.Films
+                .Include(f => f.Actors)
+                .FirstOrDefault(f => f.FilmId == filmId);
+
+            if (film != null && actor != null)
+            {
+                if (!film.Actors.Any(a => a.ActorId == actor.ActorId))
+                {
+                    film.Actors.Add(actor);
+                    context.SaveChanges();
+                    Console.WriteLine($"Added {actor.FirstName} {actor.LastName} to {film.Title}");
+                }
+                else
+                {
+                    Console.WriteLine($"Actor {actor.FirstName} {actor.LastName} is already in the film {film.Title}.");
+                }
+            }
+        }
+
         static void UpdateActor(PagilaContext context, int actorId)
         {
             var actor = context.Actors.Find(actorId);
