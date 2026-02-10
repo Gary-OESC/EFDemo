@@ -51,11 +51,14 @@ namespace EFDemo
         {
             Console.WriteLine($"Actors with last name of {lastName}:");
 
-            var actors = context.Actors
+            var query = context.Actors
                 .Include(a => a.Films)
                 .Where(a => a.LastName == lastName)
-                .OrderBy(a => a.ActorId)
-                .ToList();
+                .OrderBy(a => a.ActorId);
+
+            Console.WriteLine(query.ToQueryString()); //Example of logging generated SQL
+
+            var actors = query.ToList();
 
             foreach (var actor in actors)
             {
@@ -105,7 +108,7 @@ namespace EFDemo
             var film = new Film
             {
                 Title = title,
-                Description = null,
+                Description = null, //Example of inserting NULL value
                 ReleaseYear = 2026
             };
 
